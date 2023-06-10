@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>状态管理 HTTP API</title>
+  <script src="https://cdn.czl.net/frame/jquery/jquery-3.6.2.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/mdui@1.0.2/dist/css/mdui.min.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px;
+      background-color: white;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    .mdui-btn {
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .mdui-textfield {
+      margin-bottom: 24px;
+    }
+
+    #result {
+      margin-top: 24px;
+    }
+
+    .alert {
+      padding: 10px;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .alert-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+
+<body
+  class="mdui-appbar-with-toolbar mdui-bottom-nav-fixed mdui-theme-primary-indigo mdui-theme-accent-indigo mdui-color-grey-50"
+  style="padding-bottom:280px;">
+  <div class="mdui-appbar mdui-appbar-fixed mdui-valign" style="background-color: #1e3b7a;">
+    <h1 class="mdui-center" style="color:#FFF;">CZL Status管理</h1>
+  </div>
+  <div class="mdui-container">
+    <div class="container">
+      <div class="mdui-textfield">
+        <label for="managerToken" class="mdui-textfield-label">管理令牌:</label>
+        <input type="text" id="managerToken" placeholder="输入管理令牌" class="mdui-textfield-input">
+      </div>
+      <br>
+      <div>
+        <button onclick="listAnnouncements()" class="mdui-btn mdui-btn-raised">列出已发布的公告</button>
+        <button onclick="listProberAlerts()" class="mdui-btn mdui-btn-raised">列出探测器警报</button>
+        <button onclick="listIgnoredProberAlerts()" class="mdui-btn mdui-btn-raised">解决探测器警报的忽略规则</button>
+      </div>
+      <br>
+      <form id="announcementForm">
+        <div class="mdui-textfield">
+          <label for="title" class="mdui-textfield-label">标题:</label>
+          <input type="text" id="title" placeholder="输入标题" name="title" required class="mdui-textfield-input">
+        </div>
+        <div class="mdui-textfield">
+          <label for="text" class="mdui-textfield-label">内容:</label>
+          <textarea id="text" placeholder="输入内容" name="text" rows="5" required class="mdui-textfield-input"></textarea>
+        </div>
+        <button type="submit" class="mdui-btn mdui-btn-raised">发布新公告</button>
+      </form>
+      <br>
+      <form id="retractForm">
+        <div class="mdui-textfield">
+          <label for="announcementId" class="mdui-textfield-label">公告ID:</label>
+          <input type="text" id="announcementId" placeholder="输入公告ID" name="announcementId" required
+            class="mdui-textfield-input">
+        </div>
+        <button type="submit" class="mdui-btn mdui-btn-raised">撤回已发布的公告</button>
+      </form>
+      <br>
+      <form id="updateIgnoreRulesForm">
+        <div class="mdui-textfield">
+          <label for="remindersSeconds" class="mdui-textfield-label">提醒间隔 (秒):</label>
+          <input type="text" id="remindersSeconds" placeholder="输入提醒间隔" name="remindersSeconds" required
+            class="mdui-textfield-input">
+        </div>
+        <button type="submit" class="mdui-btn mdui-btn-raised">更新探测器警报的忽略规则</button>
+      </form>
+      <br>
+      <div id="result"></div>
+    </div>
+  </div>
+
+  <script>
+    const apiUrl = 'https://status.example.com/manager/';
+
+    function createAuthHeader() {
+      const managerToken = document.getElementById('managerToken').value;
+      return {
+        'Authorization': 'Basic ' + btoa(':' + managerToken),
+        'Content-Type': 'application/json; charset=utf-8'
+      }
+    }
+
+    function listAnnouncements() {
+      $.ajax({
+        url: apiUrl + 'announcements/',
+        method: 'GET',
+        headers: createAuthHeader(),
+        success: function (data) {
+          $('#result').prepend('<div class="alert alert-success">已发布的公告：' + JSON.stringify(data) + '</div><br>');
+        },
+        error: function (error) {
+          $('#result').prepend('<div class="alert alert-danger">获取已发布公告失败</div><br>');
+        }
+      });
+    }
+
+    function listProberAlerts() {
+      $.ajax({
+        url: apiUrl + 'prober/alerts/',
+        method: 'GET',
+        headers: createAuthHeader(),
+        success: function (data) {
+          $('#result').prepend('<div class="alert alert-success">探测器警报：' + JSON.stringify(data) + '</div><br>');
+        },
+        error: function (error) {
+          $('#result').prepend('<div class="alert alert-danger">获取探测器警报失败</div><br>');
+        }
+      });
+    }
+
+    function listIgnoredProberAlerts() {
+      $.ajax({
+        url: apiUrl + 'prober/alerts/ignored/',
+        method: 'GET',
+        headers: createAuthHeader(),
+        success: function (data) {
+          $('#result').prepend('<div class="alert alert-success">忽略的警报规则：' + JSON.stringify(data) + '</div><br>');
+        },
+        error: function (error) {
+          $('#result').prepend('<div class="alert alert-danger">获取忽略规则失败</div><br>');
+        }
+      });
+    }
+
+    $('#announcementForm').on('submit', function (e) {
+      e.preventDefault();
+      const title = $('#title').val();
+      const text = $('#text').val();
+
+      $.ajax({
+        url: apiUrl + 'announcement/',
+        method: 'POST',
+        headers: createAuthHeader(),
+        data: JSON.stringify({ title, text }),
+        success: function (data) {
+          $('#result').prepend('<div class="alert alert-success">新公告发布成功</div><br>');
+        },
+        error: function (error) {
+          $('#result').prepend('<div class="alert alert-danger">发布新公告失败</div><br>');
+        }
+      });
+    });
+
+    $('#retractForm').on('submit', function (e) {
+      e.preventDefault();
+      const announcementId = $('#announcementId').val();
+
+      $.ajax({
+        url: apiUrl + 'announcement/' + announcementId + '/',
+        method: 'DELETE',
+        headers: createAuthHeader(),
+        success: function (data) {
+          $('#result').prepend('<div class="alert alert-success">公告撤回成功</div><br>');
+        },
+        error: function (error) {
+          $('#result').prepend('<div class="alert alert-danger">撤回公告失败</div><br>');
+        }
+      });
+    });
+
+    $('#updateIgnoreRulesForm').on('submit', function (e) {
+      e.preventDefault();
+      const remindersSeconds = $('#remindersSeconds').val();
+
+      $.ajax({
+        url: apiUrl + 'prober/alerts/ignored/',
+        method: 'PUT',
+        headers: createAuthHeader(),
+        data: JSON.stringify({ reminders_seconds: remindersSeconds }),
+        success: function (data) {
+          $('#result').prepend('<div class="alert alert-success">更新忽略规则成功</div><br>');
+        },
+        error: function (error) {
+          $('#result').prepend('<div class="alert alert-danger">更新忽略规则失败</div><br>');
+        }
+      });
+    });
+  </script>
+  <script src="https://unpkg.com/mdui@1.0.2/dist/js/mdui.min.js"></script>
+</body>
+
+</html>
