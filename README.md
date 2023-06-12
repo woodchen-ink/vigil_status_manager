@@ -11,4 +11,7 @@
 你需要先输入你的`manager_token`，然后才能进行其他操作。
 ![image](https://github.com/woodchen-ink/vigil_status_manager/assets/95951386/e852cc72-fbe7-4962-a906-834942537a2f)
 
+# 广告
+[CZL Chat](https://chat.czl.net)，稳定商业版AI服务。
+
 
